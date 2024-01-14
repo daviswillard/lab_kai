@@ -2,48 +2,61 @@ package ru.kulikova;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import lombok.extern.slf4j.Slf4j;
-import ru.kulikova.model.Client;
-import ru.kulikova.model.Server;
-import ru.kulikova.model.Logger;
-import ru.kulikova.utility.ServerLogger;
 
-@Slf4j
 public class App {
   static File serverLocation;
   static File loggerLocation;
 
   static {
-    serverLocation = new File("client/src/main/resources/server.yaml");
-    loggerLocation = new File("client/src/main/resources/logger.yaml");
+    serverLocation = new File("client/src/main/resources/server.txt");
+    loggerLocation = new File("client/src/main/resources/logger.txt");
   }
 
   public static void main(String[] args) {
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    mapper.findAndRegisterModules();
 
-    Server server;
+    ServerInfo serverInfo;
     Logger logger;
-    try {
-      server = mapper.readValue(serverLocation, Server.class);
-      logger = mapper.readValue(loggerLocation, Logger.class);
+    try (
+        BufferedReader serverReader= new BufferedReader(new FileReader(serverLocation));
+        BufferedReader loggerReader= new BufferedReader(new FileReader(loggerLocation))
+    ) {
+      String line;
+      StringBuilder sb = new StringBuilder();
+      String[] lines;
+      while ((line = serverReader.readLine()) != null) {
+        sb.append(line);
+        sb.append('\n');
+      }
+      lines = sb.toString().split("\n");
+      serverInfo = new ServerInfo(lines[0], Integer.valueOf(lines[1]));
+      sb = new StringBuilder();
+      while ((line = loggerReader.readLine()) != null) {
+        sb.append(line);
+        sb.append('\n');
+      }
+      lines = sb.toString().split("\n");
+      logger = new Logger(lines[0]);
     } catch (IOException ex) {
-      log.error(ex.getMessage());
+      System.err.println(ex.getMessage());
       return;
     }
+
+    System.out.println(serverInfo.getAddress() + serverInfo.getPort() + logger.getLocation());
 
     ServerLogger serverLogger = new ServerLogger(logger.getLocation());
     FileOutputStream logStream;
     try {
       logStream = serverLogger.getLogger();
     } catch (IOException ex) {
-      log.error(ex.getMessage());
+      System.err.println(ex.getMessage());
       return;
     }
-    Thread client  = new Thread(new Client(server, logStream));
+    Thread client = new Thread(new Client(serverInfo, logStream));
     client.start();
   }
 }
