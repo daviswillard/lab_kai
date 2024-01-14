@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
@@ -23,7 +24,10 @@ public class Client implements Runnable {
 
   @Override
   public void run() {
-    try (Socket socket = new Socket(serverInfo.getAddress(), serverInfo.getPort());
+    try (
+        Socket socket = new Socket(
+            InetAddress.getByAddress(serverInfo.getAddress().getBytes()), serverInfo.getPort()
+        );
         InputStreamReader reader = new InputStreamReader(socket.getInputStream());
         OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream())
     ) {
@@ -34,6 +38,8 @@ public class Client implements Runnable {
         int readResult = reader.read(readBytes, 0, CHAR_BUFFER_SIZE);
         if (readResult < 0) {
           break;
+        } else if (readResult == 0) {
+          continue;
         }
         String result = new String(readBytes);
         System.out.println(result);
