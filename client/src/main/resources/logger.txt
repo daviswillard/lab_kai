@@ -1,1 +1,1 @@
-/some/existing/location/on/disk/file
+D:\JavaProjects\lab4\client\logs\logs.log

@@ -24,6 +24,7 @@ public class Client implements Runnable {
 
   @Override
   public void run() {
+
     try (
         Socket socket = new Socket(
             InetAddress.getByAddress(serverInfo.getAddress().getBytes()), serverInfo.getPort()
