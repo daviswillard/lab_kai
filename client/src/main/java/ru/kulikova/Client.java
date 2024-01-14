@@ -3,10 +3,13 @@ package ru.kulikova;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Scanner;
 
 public class Client implements Runnable {
@@ -27,22 +30,30 @@ public class Client implements Runnable {
 
     try (
         Socket socket = new Socket(
-            InetAddress.getByAddress(serverInfo.getAddress().getBytes()), serverInfo.getPort()
+            InetAddress.getByName(serverInfo.getAddress()), serverInfo.getPort()
         );
         InputStreamReader reader = new InputStreamReader(socket.getInputStream());
-        OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream())
+        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)
     ) {
       while (true) {
         String message;
-        message = scanner.nextLine();
-        writer.write(message);
+        while (true) {
+          message = scanner.nextLine();
+//          System.out.println(message); для дебага
+          writer.print(message);
+          if (message.contains("=")) {
+            writer.println();
+            break;
+          }
+        }
         int readResult = reader.read(readBytes, 0, CHAR_BUFFER_SIZE);
         if (readResult < 0) {
           break;
         } else if (readResult == 0) {
           continue;
         }
-        String result = new String(readBytes);
+
+        String result = new String(readBytes).replace("\u0000", "");
         System.out.println(result);
         logger.write(result.getBytes(StandardCharsets.UTF_8));
       }

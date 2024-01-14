@@ -43,7 +43,7 @@ public class Server {
 
         logger.log(message);
         double answer = calculator.calculate(message);
-        print(message + " = " + answer);
+        print(message + answer);
 
         OutputStream output = socket.getOutputStream();
         PrintWriter writer = new PrintWriter(output, true);

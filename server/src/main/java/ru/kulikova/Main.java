@@ -13,6 +13,7 @@ public class Main {
     Scanner in = new Scanner(System.in);
     System.out.println("Введите порт: ");
     int port = in.nextInt();
+//    int port = 8080; // для дебага
     Server server = new Server(port, filePath);
     server.run();
   }

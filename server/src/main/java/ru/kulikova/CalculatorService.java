@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class CalculatorService {
 
-  private final char[] operands = {'+', '-'};
+  private final char[] operands = {'+', '-', '='};
 
   public double calculate(String expression) {
     ArrayList<Double> numbers = getNumbersFromExpression(expression);
@@ -43,8 +43,6 @@ public class CalculatorService {
       }
     }
     // в конце строки никакого математического знака не будет, поэтому просто парсим последнее число
-    numbers.add(Double.parseDouble(curValue.toString()));
-
     return numbers;
   }
 
